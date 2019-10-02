@@ -1,0 +1,49 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+	
+	<h1>Register</h1>
+	
+	<hr>
+
+	<div class="col-sm-5 col-md-5" >
+		{% from "includes/_formhelpers.html" import render_field %}
+		<form method="POST" action=" ">
+			
+			<div class="form-group">
+				{{render_field(form.name, class_="form-control")}}
+			</div>
+			<div class="form-group">
+				{{render_field(form.username, class_="form-control")}}
+			</div>
+			<div class="form-group">
+				{{render_field(form.email, class_="form-control")}}
+			</div>
+			<div class="form-group">
+				{{render_field(form.password, class_="form-control")}}
+			</div>
+			<div class="form-group">
+				{{render_field(form.confirm, class_="form-control")}}
+			</div>
+			<div class="form-group">
+				{{render_field(form.hidden, class_="form-control", id="pose_verified")}}
+			</div>
+			{{ form.csrf_token }}
+			<p><input type="submit" value="Register" class="btn btn-primary" id="submit_form"></p>
+		</form>	
+	</div>
+
+	<div class="col-sm-7 col-md-7">
+		<h1> Pose CAPTCHA </h1>
+		<div id="pose_captcha">
+			{% if human %}
+				<p>Pose Captcha <b>Verified</b>.</p>
+				<hr>
+				<img src="{{ url_for('static', filename='checkmark.gif') }}" alt="Verified" class ="img-responsive">
+			{% else %}
+				{% include 'pose_captcha.html' %}
+			{% endif %}			
+		</div>
+	</div>
+	
+{% endblock %}

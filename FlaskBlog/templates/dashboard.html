@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+	<h1>Dashboard <small>Welcome {{session.username}}</small></h1>
+	
+	{% if not articles %}
+	<hr>
+	<h2>No Articles</h2>
+	<a class="btn btn-success" href="/add_article">Add Article</a>
+	{% else %}
+	<a class="btn btn-lg btn-success" href="/add_article">Add Article</a>
+	<hr>
+	<table class="table table-striped">
+		<tr>
+			<th>Title</th>
+			<th>Date Created</th>
+			<th></th>
+			<th></th>
+		</tr>
+		{% for article in articles %}
+		<tr>
+			<td><a href="/article/{{article.id}}">{{article.title}}</a></td>
+			<td>{{article.create_date}}</td>
+			<td><a href="/edit_article/{{article.id}}" class="btn btn-default pull-right">Edit</a></td>
+			<td><a href="/delete_article/{{article.id}}" class="btn btn-danger" onclick="return confirm('Are you sure? Click OK if you are.');">Delete</a></td>
+		</tr>
+		{% endfor %}
+	</table>
+	{% endif %}
+{% endblock %}

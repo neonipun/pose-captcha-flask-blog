@@ -1,0 +1,170 @@
+
+<hr>
+	
+	<div class="col-sm-6 col-md-6 col-lg-6">
+
+		  <div class="panel panel-default">
+		    <div class="panel-heading"><b>Pose Captcha Instructions :-</b></div>
+		    <div class="panel-body">
+				<ul>
+					<li>Pose : <b>{{ pose }}</b></li>
+					<li>Pose Thumbnail : 
+						  <object data="{{ url_for('static', filename=pose+'.jpg') }}" type="image/jpg" class ="img-thumbnail">
+						    <img src="{{ url_for('static', filename='temp.jpg') }}" alt="{{ pose }}" class ="img-thumbnail" width="160" height="120">
+						  </object>
+					</li>
+					<li>Try to center yourself in the frame.</li>
+					<li>Pose as humanly as possible and submit it for verification.</li>
+					<li>All poses require you to have your upper body in the frame, i.e. your head, shoulders and both arms (atleast part of your fore-arm).</li>
+					<li>You can take Snapshots as many times as you want till satisfied.</li>
+				</ul>
+		    </div>
+		  </div>
+		
+	</div>
+	<div class="col-sm-6 col-md-6 col-lg-6">
+		<center>
+			<div id="my_camera"></div>
+			<hr>
+			<!-- A button for taking snaps -->
+			<form>
+				<div id="pre_take_buttons">
+					<input type=button value="Take Snapshot" class="btn btn-primary btn-sm" onClick="preview_snapshot()">
+				</div>
+				<div id="post_take_buttons" style="display:none">
+					<input type=button value="&lt; Take Another" class="btn btn-primary btn-sm" onClick="cancel_preview()">
+					<input type=button value="Save Photo &gt;" class="btn btn-primary btn-sm" onClick="save_photo()" style="font-weight:bold;">
+				</div>
+			</form>	
+			<hr>
+			<center>
+				<div id="clockdiv" style="display:none">
+		        	<div>
+		          		<div class="smalltext">GET READY IN</div>
+		          		<span class="seconds"></span>
+		        	</div>
+		      	</div>
+			</center>
+		</center>
+
+			
+	</div>
+	
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="{{ url_for('static', filename='webcam.min.js') }}"></script>
+	
+	<!-- Configure a few settings and attach camera -->
+	<script language="JavaScript">
+
+		Webcam.set({
+			width: 320,
+			height: 240,
+			dest_width: 640,
+    		dest_height: 480,
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+		
+	</script>
+
+	<!-- Including pose_captcha api call -->
+	<!-- <script type="text/javascript" src="{{ url_for('static', filename='pose_captcha.js') }}"></script> -->
+
+	<script>
+
+	    function preview_snapshot() {
+	    	$(".smalltext").html("GET READY IN");
+			$("#clockdiv .seconds").html("");
+			document.getElementById('pre_take_buttons').style.display = 'none';
+
+	    	//Timer function 
+	    	function timer_div() {
+		        // Set count down seconds
+		        var seconds = 3;
+
+		        // Update the count down every 1 second
+		        var x = setInterval(function() {
+		        	// Output the result in the element "#clockdiv .seconds"
+		            $("#clockdiv .seconds").html(seconds+ "s ");
+
+		            // If the count down is over, write some text 
+		            if (seconds <= 0) {
+		                clearInterval(x);
+		                 $(".smalltext").html("");
+		                 $("#clockdiv .seconds").html("POSE");
+		                 
+		                 setTimeout(function() { 
+		                 	// freeze camera so user can preview pic
+		                 	Webcam.freeze();
+		                 	$("#clockdiv .seconds").html("Save and Submit");
+		                 	// swap button sets
+							document.getElementById('pre_take_buttons').style.display = 'none';
+							document.getElementById('post_take_buttons').style.display = '';
+							 }, 1000);                 
+		            }
+		            seconds = seconds - 1
+		        }, 1000);
+		    }			
+			//Show Timer div
+			$( "#clockdiv").show( "slow", timer_div());
+			$( "#clockdiv" ).delay(10000).hide( "slow" );
+		}
+		
+		function cancel_preview() {
+			// cancel preview freeze and return to live camera feed
+			Webcam.unfreeze();
+			
+			// swap buttons back
+			document.getElementById('pre_take_buttons').style.display = '';
+			document.getElementById('post_take_buttons').style.display = 'none';
+
+		}
+		
+		function save_photo() {
+			Webcam.snap( function(data_uri) {
+				$("#submit_form").attr("disabled", true);
+				$("#pose_captcha").fadeOut(500);
+				$("#pose_captcha").html('	<hr>\
+											<p>Pose Captcha being verified ...</p>\
+											<hr>\
+											<img src="{{ url_for('static', filename='loading.gif') }}" alt="Being Verified" class ="img-responsive">');
+				$("#pose_captcha").fadeIn(100);
+				
+				// snap complete, image data is in 'data_uri'
+				Webcam.upload( data_uri, '/test', function(code, text) {
+					// Upload complete!
+					// 'code' will be the HTTP response code from the server, e.g. 200
+					// 'text' will be the raw response content
+					//alert("Inside Upload");
+					var data = JSON.parse(text);
+					if (data.human == "True") {
+						$("#pose_verified").val(data.token);
+						$("#pose_captcha").fadeOut(500);
+						$("#pose_captcha").html('	<hr>\
+											<p>Pose Captcha <b>Verified</b>.</p>\
+											<hr>\
+											<img src="{{ url_for('static', filename='checkmark.gif') }}" alt="Verified" class ="img-responsive">');
+						$("#pose_captcha").fadeIn(100);
+						$("#pose_verified_error").hide("slow");
+						Webcam.reset();
+						$(":submit").removeAttr("disabled");
+					}
+					else{
+						$("#pose_verified").val("False");
+						$("#pose_captcha").fadeOut(500);
+						$("#pose_captcha").html('<hr>\
+											<p>You have <b>failed</b> Pose Captcha, refresh and try again.</p>\
+											<hr>\
+											<img src="{{ url_for('static', filename='nothuman.gif') }}" alt="Not Verified" class ="img-responsive">');
+						$("#pose_captcha").fadeIn(100);
+						Webcam.reset();
+						$("#submit_form").removeAttr("disabled");
+					}				
+				} );				
+			} );
+		}
+
+	</script>
+	
+

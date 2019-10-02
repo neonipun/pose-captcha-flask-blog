@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>FlaskBlog</title>
+		<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> -->
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='timer.css') }}">
+	</head>
+	<body>
+		{% include 'includes/_navbar.html' %}
+		<div class="container">
+			{% include 'includes/_messages.html' %}
+			{% block body %} {% endblock %}
+		</div>
+		
+		<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+		<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>  -->
+		<!-- <script src="https://cdn.ckeditor.com/ckeditor5/1.0.0-beta.1/classic/ckeditor.js"></script> -->
+		<!-- <script src="https://cdn.ckeditor.com/4.9.1/standard/ckeditor.js"></script> -->
+		
+		<script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='ckeditor5.js') }}"></script>
+		<!-- <script src="{{ url_for('static', filename='ckeditor.js') }}"></script> -->
+
+		<script type="text/javascript">
+			// CKEDITOR.replace( 'editor' );
+			 ClassicEditor.create( document.querySelector( '#editor' ) ).catch( error => {
+		            console.error( error );
+		        } );
+		</script>
+		<script type="text/javascript">
+
+			//CSRF Protection for ajax calls
+		    var csrf_token = "{{ csrf_token() }}";
+
+		    $.ajaxSetup({
+		        beforeSend: function(xhr, settings) {
+		            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+		                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+		            }
+		        }
+		    });
+		    
+		    //For XMLHttpRequest ajax calls
+		    (function() {
+			    var send = XMLHttpRequest.prototype.send,
+			        token = csrf_token;
+			    XMLHttpRequest.prototype.send = function(data) {
+			        this.setRequestHeader('X-CSRF-Token', token);
+			        return send.apply(this, arguments);
+			    };
+			}());
+
+			
+			$( ".alert" ).delay(5000).hide(5000);
+
+			  
+		</script>
+	</body>
+</html>
