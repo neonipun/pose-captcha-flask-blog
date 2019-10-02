@@ -397,4 +397,4 @@ def delete_article(id):
 
 if __name__ == "__main__":	
 	app.secret_key = secrets.token_urlsafe(16)
-	app.run(debug=True)
+	app.run(debug=False)
