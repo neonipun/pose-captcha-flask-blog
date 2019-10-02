@@ -42,7 +42,7 @@ def generate_pose_image(image_filename):
     # print('\nPose Generation time (1-image): {:.3f}s\n'.format(elapsed))
     pose = TfPoseEstimator.draw_humans(pose, humans, imgcopy=False)
 
-    cv2.imshow('tf-pose-estimation result pose', pose)
+    # cv2.imshow('tf-pose-estimation result pose', pose)
     cv2.imwrite('pose.jpg', pose)
     cv2.waitKey()
     cv2.destroyAllWindows()
